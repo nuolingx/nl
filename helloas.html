@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript" src="angular.min.js"></script>
+	<style type="text/css">
+		.mouseHover {
+		    background-color: #b5508c!important;
+		}
+		.even{
+			background-color: #b7ffb5;
+		}
+	</style>
+</head>
+<body>
+	<div style="margin: 0 auto; width: 600px;" ng-app="myApp" ng-controller="appCtrl">
+		<div style="margin-bottom: 5px;">
+			<select ng-model="selected" ng-options="m.name as m.value for m in mOptions">
+				<option value="">-- 请选择 --</option>-
+			</select>
+			<button ng-click="add()">+</button>
+			<div style="display: inline;" ng-show='in.show'>
+				<input type="text" ng-model="text" ng-change="onTextChange()"/>
+				<button ng-disabled="s.disabled" ng-click="addToSelect()">确定</button>
+			</div>
+		</div>
+		<table border="1"cellspacing="0" cellpadding="0" width="600px" >
+			<tr>
+				<td>序号</td>
+				<td style="width: 300px;">UUID</td>
+				<td>姓名</td>
+				<td>年龄</td>
+				<td>性别</td>
+				<td>操作</td>
+			</tr>
+			<tr ng-repeat="value in names | orderBy: selected" ng-class="{even: $index%2!=0, mouseHover: hover}" ng-mouseenter="hover=true" ng-mouseleave="hover=false">
+				<td>{{$index+1}}</td>
+				<td>{{value.UUID}}</td>
+				<td>{{value.name}}</td>
+				<td>{{value.age}}</td>
+				<td>{{value.gender}}</td>
+				<td><a href="javascript:void(0);" ng-click="remove($index)">删除</a></td>
+			</tr>
+		</table>
+		<div style="float: right;">
+			<span>{{tips}}</span><input ng-click="newItem()" type="button" value="新增" />
+		</div>
+	</div>
+	<script type="text/javascript">
+
+		var app = angular.module('myApp', []);
+
+		app.controller('appCtrl', function($scope)
+		{
+			checkIsNull($scope);
+			$scope.newItem = function()
+			{
+				if($scope.names == undefined)
+				{
+					$scope.names = getJson();
+				}
+				else
+				{
+					$scope.names = $scope.names.concat(getJson());
+				}
+				checkIsNull($scope);
+		    };
+
+		    $scope.remove = function (index) {
+	            $scope.names.splice(index, 1);
+	            checkIsNull($scope);
+	        }
+
+	        $scope.onTextChange = function()
+	        {
+	        	if($scope.text == '')
+	        	{
+	        		$scope.s = {
+	        			disabled: true
+	        		}
+	        	}
+	        	else
+	        	{
+	        		$scope.s = {
+	        			disabled: false
+	        		}
+	        	}
+	        }
+
+	        $scope.add = function()
+	        {
+	        	$scope.in = {
+	        		show: !$scope.in.show
+	        	}
+	        }
+
+	        $scope.addToSelect = function()
+	        {
+	        	$scope.selected = '';
+
+			    if($scope.mOptions == undefined)
+			    {
+			    	$scope.mOptions = [{name: $scope.text,value:$scope.text}]
+			    }
+			    else
+			    {
+			    	$scope.mOptions = $scope.mOptions.concat(
+			    		[{name: $scope.text,value:$scope.text}]
+			    	);
+			    }
+	        }
+
+	        $scope.in = { show: false }
+	        $scope.s = { disabled: true }
+
+		});
+
+		app.directive('appCtrl', function(){
+			return {
+				restrict: 'C',
+				class: '#b5508'
+			}
+		})
+
+
+
+		function checkIsNull(obj)
+		{
+			if(obj.names == undefined || obj.names.length <= 0)
+			{
+				obj.tips = '没有数据';
+			}
+			else
+			{
+				obj.tips = '';
+			}
+		}
+
+		/**
+		返回json
+		*/
+		function getJson()
+		{
+			var UUID = getUUID();
+			var name = GetRandomNum(0,9999);
+			var age = GetRandomNum(0,119);
+			var gender = getGender();
+			var json =
+			[
+	            {UUID: UUID, name: name, age: age, gender: gender}
+            ];
+			return json;
+		}
+
+		/**
+		获取UUID
+		*/
+		function getUUID()
+		{
+			var s = [];
+			var hexDigits = "0123456789abcdef";
+			for (var i = 0; i < 36; i++) {
+			s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			}
+			s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			s[8] = s[13] = s[18] = s[23] = "-";
+
+			var uuid = s.join("");
+			return uuid;
+		}
+
+		/**
+		获取随机数
+		*/
+		function GetRandomNum(Min,Max)
+		{
+			var Range = Max - Min;
+			var Rand = Math.random();
+			return(Min + Math.round(Rand * Range));
+		}
+
+		function getGender()
+		{
+			var random = Math.round(Math.random());
+			if(random == 0)
+			{
+				return '男';
+			}
+			else
+			{
+				return '女';
+			}
+		}
+	</script>
+</div>
+</body>
+</html>
